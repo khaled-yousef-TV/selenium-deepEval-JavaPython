@@ -1,6 +1,3 @@
-Okay, no problem! Let's adjust the Java-specific parts of the README for Gradle.
-
-Here's the updated README reflecting Gradle usage:
 
 ```markdown
 # LLM-Response-Enhanced Selenium Testing Framework

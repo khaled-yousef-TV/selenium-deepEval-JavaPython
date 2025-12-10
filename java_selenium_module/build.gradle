@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.khaledyousef'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Selenium
+    implementation 'org.seleniumhq.selenium:selenium-java:4.15.0'
+    
+    // WebDriverManager - auto-downloads browser drivers
+    implementation 'io.github.bonigarcia:webdrivermanager:5.6.2'
+    
+    // HTTP Client for FastAPI communication
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    
+    // JSON processing
+    implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+    }
+}
+
+tasks.register('runEvalServer', Exec) {
+    description = 'Starts the Python DeepEval FastAPI server'
+    workingDir '../python_deepeval_service'
+    commandLine 'python', '-m', 'uvicorn', 'app.main:app', '--reload', '--port', '8000'
+}
+

@@ -4,12 +4,18 @@ FastAPI service for LLM Response Evaluation using DeepEval.
 This service acts as a bridge between Java Selenium tests and Python's DeepEval library.
 """
 
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import logging
 
 from .models import EvaluationRequest, EvaluationResult, MetricResult, HealthResponse
 from .evaluator import evaluator
+
+# Get the static files directory
+STATIC_DIR = Path(__file__).parent.parent / "static"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,9 +38,15 @@ app.add_middleware(
 )
 
 
-@app.get("/", response_model=HealthResponse)
+@app.get("/")
 async def root():
-    """Root endpoint with service info"""
+    """Serve the testing UI"""
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/status", response_model=HealthResponse)
+async def status():
+    """Status endpoint with service info"""
     return HealthResponse(status="running", version="1.0.0")
 
 

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepEval Testing Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-input: #1a1a24;
+            --border: #2a2a3a;
+            --text: #e4e4e7;
+            --text-muted: #71717a;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-orange: #f97316;
+            --accent-cyan: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .metric-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .metric-checkbox:hover {
+            border-color: var(--accent-purple);
+        }
+
+        .metric-checkbox input {
+            accent-color: var(--accent-purple);
+        }
+
+        .metric-checkbox span {
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-panel {
+            min-height: 400px;
+        }
+
+        .results-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: var(--text-muted);
+        }
+
+        .results-empty svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .result-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .overall-score {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .score-passed { color: var(--accent-green); }
+        .score-failed { color: var(--accent-red); }
+
+        .pass-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-pass {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--accent-green);
+        }
+
+        .badge-fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        .metric-result {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid var(--border);
+        }
+
+        .metric-result.passed {
+            border-left-color: var(--accent-green);
+        }
+
+        .metric-result.failed {
+            border-left-color: var(--accent-red);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-name {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .metric-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
+        .metric-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 0.75rem 0;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .metric-reason {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--accent-red);
+        }
+
+        .compliance-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .compliance-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .compliance-row .form-group {
+            flex: 1;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 DeepEval Console</h1>
+            <p class="subtitle">LLM Response Quality Testing</p>
+            <div class="status-bar">
+                <span class="status-dot"></span>
+                <span>Service Running • Gemini Powered</span>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Input Panel -->
+            <div class="card">
+                <h2 class="card-title">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    Test Input
+                </h2>
+
+                <div class="form-group">
+                    <label>LLM Response to Evaluate *</label>
+                    <textarea id="llmResponse" placeholder="Enter the LLM response you want to evaluate...">Paris is the capital of France. It is known for the Eiffel Tower and is a major cultural center in Europe.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>User Query</label>
+                    <input type="text" id="userQuery" placeholder="What question was asked?" value="What is the capital of France?">
+                </div>
+
+                <div class="form-group">
+                    <label>Expected Output</label>
+                    <input type="text" id="expectedOutput" placeholder="What should the ideal answer contain?" value="Paris">
+                </div>
+
+                <div class="form-group">
+                    <label>Context (for hallucination check)</label>
+                    <textarea id="context" placeholder="Provide ground truth context...">Paris is the capital and most populous city of France. The Eiffel Tower is located in Paris.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Metrics to Evaluate</label>
+                    <div class="metrics-grid">
+                        <label class="metric-checkbox">
+                            <input type="checkbox" value="accuracy" checked> <span>Accuracy</span>
+                        </label>
+                        <label class="metric-checkbox">
+                            <input type="checkbox" value="relevancy" checked> <span>Relevancy</span>
+                        </label>
+                        <label class="metric-checkbox">
+                            <input type="checkbox" value="coherence"> <span>Coherence</span>
+                        </label>
+                        <label class="metric-checkbox">
+                            <input type="checkbox" value="hallucination"> <span>Hallucination</span>
+                        </label>
+                        <label class="metric-checkbox">
+                            <input type="checkbox" value="faithfulness"> <span>Faithfulness</span>
+                        </label>
+                        <label class="metric-checkbox">
+                            <input type="checkbox" value="compliance"> <span>Compliance</span>
+                        </label>
+                        <label class="metric-checkbox">
+                            <input type="checkbox" value="toxicity"> <span>Toxicity</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="compliance-section" id="complianceSection" style="display: none;">
+                    <label>Compliance Rules</label>
+                    <div class="compliance-row">
+                        <div class="form-group">
+                            <label>Must Contain (comma-separated)</label>
+                            <input type="text" id="mustContain" placeholder="e.g., disclaimer, warning">
+                        </div>
+                        <div class="form-group">
+                            <label>Must NOT Contain</label>
+                            <input type="text" id="mustNotContain" placeholder="e.g., guaranteed, promise">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="evaluateBtn" onclick="evaluate()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Run Evaluation
+                </button>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="card results-panel">
+                <h2 class="card-title">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Results
+                </h2>
+
+                <div id="resultsContainer">
+                    <div class="results-empty">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        <p>Run an evaluation to see results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>DeepEval Testing Console • Powered by Google Gemini</p>
+        </footer>
+    </div>
+
+    <script>
+        // Show/hide compliance section based on checkbox
+        document.querySelectorAll('.metric-checkbox input').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const complianceSection = document.getElementById('complianceSection');
+                const complianceChecked = document.querySelector('input[value="compliance"]').checked;
+                complianceSection.style.display = complianceChecked ? 'block' : 'none';
+            });
+        });
+
+        async function evaluate() {
+            const btn = document.getElementById('evaluateBtn');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Get selected metrics
+            const metrics = Array.from(document.querySelectorAll('.metric-checkbox input:checked'))
+                .map(cb => cb.value);
+            
+            if (metrics.length === 0) {
+                alert('Please select at least one metric');
+                return;
+            }
+
+            // Build request
+            const request = {
+                llm_response: document.getElementById('llmResponse').value,
+                user_query: document.getElementById('userQuery').value || null,
+                expected_output: document.getElementById('expectedOutput').value || null,
+                context: document.getElementById('context').value || null,
+                metrics: metrics
+            };
+
+            // Add compliance criteria if selected
+            if (metrics.includes('compliance')) {
+                const mustContain = document.getElementById('mustContain').value;
+                const mustNotContain = document.getElementById('mustNotContain').value;
+                if (mustContain || mustNotContain) {
+                    request.custom_criteria = {
+                        must_contain: mustContain ? mustContain.split(',').map(s => s.trim()) : [],
+                        must_not_contain: mustNotContain ? mustNotContain.split(',').map(s => s.trim()) : []
+                    };
+                }
+            }
+
+            // Show loading
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px"></span> Evaluating...';
+            resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const response = await fetch('/evaluate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request)
+                });
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                resultsContainer.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Run Evaluation';
+            }
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (!data.success && data.error) {
+                container.innerHTML = `<div class="error-message">${data.error}</div>`;
+                return;
+            }
+
+            const scorePercent = (data.overall_score * 100).toFixed(0);
+            const passed = data.passed;
+
+            let html = `
+                <div class="result-summary">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Overall Score</div>
+                        <div class="overall-score ${passed ? 'score-passed' : 'score-failed'}">${scorePercent}%</div>
+                    </div>
+                    <span class="pass-badge ${passed ? 'badge-pass' : 'badge-fail'}">
+                        ${passed ? '✓ PASSED' : '✗ FAILED'}
+                    </span>
+                </div>
+            `;
+
+            // Individual metrics
+            for (const [name, metric] of Object.entries(data.metrics)) {
+                const metricPassed = metric.passed;
+                const scorePercent = (metric.score * 100).toFixed(0);
+                const barColor = metricPassed ? 'var(--accent-green)' : 'var(--accent-red)';
+
+                html += `
+                    <div class="metric-result ${metricPassed ? 'passed' : 'failed'}">
+                        <div class="metric-header">
+                            <span class="metric-name">${metric.name}</span>
+                            <span class="metric-score" style="color: ${barColor}">${scorePercent}%</span>
+                        </div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" style="width: ${scorePercent}%; background: ${barColor}"></div>
+                        </div>
+                        <div class="metric-reason">${metric.reason || 'No details available'}</div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
+
